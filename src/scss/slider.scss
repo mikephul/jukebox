@@ -1,0 +1,56 @@
+.slider {
+  position: relative;
+  height: 16px;
+
+  &:before, &:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    height: 6px;
+    width: 1px;
+  }
+
+  &:before {
+    left: 0;
+    background: $fuscia
+  }
+
+  &:after {
+    right: 0;
+    background: $lightgray;
+  }
+
+  .bar {
+    top: 7px;
+    height: 2px;
+
+  }
+
+  .bar-0 {
+    background: $fuscia;
+  }
+
+  .bar-1 {
+    background: $lightgray;
+  }
+  .handle {
+    position: absolute;
+    background: $fuscia;
+    width: 16px;
+    height: 16px;
+    border-radius: 25px;
+    box-shadow: 1px 1px 1px rgba(0,0,0,0.1);
+    // I know, transitioning left is bad.
+    // Sadly, I don't have the time to update React-Slider to use
+    // transform instead of left.
+    transition: transform 400ms, left 200ms;
+
+    &:active {
+      transition: transform 75ms;
+      transform: scale(1.2, 1.2);
+    }
+  }
+
+}
