@@ -77,10 +77,10 @@ class Playlist extends Component {
 
   componentDidMount(){
     console.log("cdm");
-    firebase.database().ref('chart2/playlist').orderByChild('score').on('value', function (snapshot) {
+    firebase.database().ref('chart/playlist').orderByChild('score').on('value', function (snapshot) {
       this.setState({items: _.values(snapshot.val())});
     }.bind(this));
-    firebase.database().ref('chart2/now_playing').on('value', function (snapshot) {
+    firebase.database().ref('chart/now_playing').on('value', function (snapshot) {
       this.setState({now_playing: snapshot.val()});
     }.bind(this));
   }
@@ -101,12 +101,12 @@ class Playlist extends Component {
 
   up(id){
     console.log("Up", id);
-    this.addTransction('mike', id, 'upvote');
+    this.addTransction(userId, id, 'upvote');
   }
 
   down(id){
     console.log("Down", id);
-    this.addTransction('mike', id, 'downvote');
+    this.addTransction(userId, id, 'downvote');
   }
 
   renderItems() {
@@ -143,6 +143,7 @@ class Playlist extends Component {
   render() {
     return (
       <div className="container">
+        <span className="name-header">Hello, {userName}</span>
         <div className="jukebox-padding">
           <FlipMove
             staggerDurationBy="30"
