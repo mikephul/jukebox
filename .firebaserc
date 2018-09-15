@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "line-hack-2018-b0228"
+  },
+  "targets": {
+    "line-hack-2018-f9785": {
+      "hosting": {
+        "jukebox": [
+          "line-hack-2018-b0228"
+        ]
+      }
+    }
+  }
+}

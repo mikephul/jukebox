@@ -1,36 +1,41 @@
 import React, { Component } from "react";
 import "./App.css";
 import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-import { shuffle, orderBy } from "lodash";
+import _, { shuffle, orderBy } from "lodash";
 import FlipMove from "react-flip-move";
+import * as firebase from "firebase";
+import jQuery from 'jquery'
 
-const songs = [
-  {
-    id: "a",
-    name: "ถังน้ำแข็ง",
-    vote: 1
-  },
-  {
-    id: "b",
-    name: "พ่อกูเป็นสุลต่าน",
-    vote: 3
-  },
-  {
-    id: "c",
-    name: "วิชาตัวเบา",
-    vote: 2
-  },
-  {
-    id: "d",
-    name: "KODOMO",
-    vote: 1
-  },
-  {
-    id: "e",
-    name: "เกรงใจ",
-    vote: 2
-  }
-];
+// Initialize Firebase
+const config = {
+  apiKey: "AIzaSyCbCpRYv0fJKYg-_ynyczy2MokyAWJG4eo",
+  authDomain: "line-hack-2018-f9785.firebaseapp.com",
+  databaseURL: "https://line-hack-2018-f9785.firebaseio.com",
+  projectId: "line-hack-2018-f9785",
+  storageBucket: "line-hack-2018-f9785.appspot.com",
+  messagingSenderId: "658110891512"
+};
+let userId = null;
+let userName = null;
+firebase.initializeApp(config);
+const liff = window.liff;
+
+jQuery(window).on('load', function(){
+  console.log("Windows onLoad");
+  liff.init(function (data) {
+    userId = data.context.userId;
+    console.log("Liff init successfully", userId);
+    liff.getProfile()
+      .then(profile => {
+        userName = profile.displayName
+        console.log("Liff username successfully", userName);
+      })
+      .catch((err) => {
+        console.log('error', err);
+    });
+  });
+});
+
 
 class App extends Component {
   render() {
@@ -40,7 +45,11 @@ class App extends Component {
 
 class NowPlaying extends Component {
   render() {
-    return <li className="list now-playing">{this.props.songName}</li>;
+    console.log(this.props);
+    if (this.props.song){
+      return <li className="list now-playing">{this.props.song.name}</li>;
+    }
+    return <li className="list now-playing">Waiting for song...</li>;
   }
 }
 
@@ -48,8 +57,32 @@ class Playlist extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      items: songs
+      items: [],
+      now_playing: null
     };
+  }
+
+  addTransction(userId, songId, action) {
+    console.log("userId", userId);
+    console.log("songId", songId);
+    console.log("action", action);
+
+    return firebase.database().ref('transactions').push({
+      userId,
+      action,
+      songId,
+      timestamp: new Date().getTime()
+    });
+  }
+
+  componentDidMount(){
+    console.log("cdm");
+    firebase.database().ref('chart2/playlist').orderByChild('score').on('value', function (snapshot) {
+      this.setState({items: _.values(snapshot.val())});
+    }.bind(this));
+    firebase.database().ref('chart2/now_playing').on('value', function (snapshot) {
+      this.setState({now_playing: snapshot.val()});
+    }.bind(this));
   }
 
   shuffle = event => {
@@ -66,11 +99,24 @@ class Playlist extends Component {
     });
   };
 
+  up(id){
+    console.log("Up", id);
+    this.addTransction('mike', id, 'upvote');
+  }
+
+  down(id){
+    console.log("Down", id);
+    this.addTransction('mike', id, 'downvote');
+  }
+
   renderItems() {
+    console.log(this.state.items);
     return this.state.items.map(item => (
-      <li className="list" key={item.id}>
+      <li className="list" key={item.songId}>
+        <div>[{item.score}]</div>
         <div>{item.name}</div>
-        <div>{item.vote}</div>
+        <div><button onClick={()=>this.up(item.songId)}>^</button></div>
+        <div><button onClick={()=>this.down(item.songId)}>v</button></div>
       </li>
     ));
   }
@@ -104,7 +150,7 @@ class Playlist extends Component {
             typeName="ul"
             className="no-padding"
           >
-            <NowPlaying songName="joke" />
+            <NowPlaying song={this.state.now_playing} />
             {this.renderItems()}
           </FlipMove>
         </div>
