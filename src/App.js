@@ -137,6 +137,16 @@ class Playlist extends Component {
     this.addTransction(userId, id, 'downvote');
   }
 
+  up_now_playing(id){
+    console.log("Up Now Playing", id);
+    this.addTransction(userId, id, 'upvote-now-playing');
+  }
+
+  down_now_playing(id){
+    console.log("Down Now Playing", id);
+    this.addTransction(userId, id, 'downvote-now-playing');
+  }
+
   renderItems() {
     console.log(this.state.items);
     return this.state.items.map(item => (
@@ -179,7 +189,7 @@ class Playlist extends Component {
             className="no-padding"
           >
             <span className="name-header">You have {this.state.user.credit} credits</span>
-            <NowPlaying song={this.state.now_playing} up={this.up} down={this.down} />
+            <NowPlaying song={this.state.now_playing} up={this.up_now_playing} down={this.down_now_playing} />
             {this.renderItems()}
           </FlipMove>
         </div>
