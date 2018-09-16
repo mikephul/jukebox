@@ -168,3 +168,43 @@ li .buttons {
   /* text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px #FFDD1B, 0 0 35px #FFDD1B, 0 0 40px #FFDD1B, 0 0 50px #FFDD1B, 0 0 75px #FFDD1B; */
   /* text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #fff, 0 0 40px #FFDD1B, 0 0 70px #FFDD1B, 0 0 80px #FFDD1B, 0 0 100px #FFDD1B, 0 0 150px #FFDD1B; */
 }
+
+.scoreRow{
+  padding: 20px 0 0 0;
+  width: 40px !important;
+  font-size: 1.2em;
+}
+
+.songNameRow{
+  font-size: .8em;
+  width: 80%;
+  text-align: left;
+}
+
+
+.titleScoreRow{
+  padding: 10px 0 0 0;
+  width: 40px !important;
+  font-size: 1.2em;
+}
+
+.titleSongNameRow{
+  font-size: 1em;
+  width: 80%;
+  text-align: left;
+}
+
+.voteRow{
+  width: 40px !important;
+}
+
+.voteRow button{
+  margin: 1px;
+}
+
+.voteButton{
+  background-color: #222222;
+  border: #000000;
+  margin: 5px;
+  padding: 5px;
+}

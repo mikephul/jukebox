@@ -4,7 +4,6 @@ import "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 import _, { shuffle, orderBy } from "lodash";
 import FlipMove from "react-flip-move";
 import * as firebase from "firebase";
-import jQuery from 'jquery'
 
 // Initialize Firebase
 const config = {
@@ -20,23 +19,6 @@ let userName = null;
 firebase.initializeApp(config);
 const liff = window.liff;
 
-jQuery(window).on('load', function(){
-  console.log("Windows onLoad");
-  liff.init(function (data) {
-    userId = data.context.userId;
-    console.log("Liff init successfully", userId);
-    liff.getProfile()
-      .then(profile => {
-        userName = profile.displayName
-        console.log("Liff username successfully", userName);
-      })
-      .catch((err) => {
-        console.log('error', err);
-    });
-  });
-});
-
-
 class App extends Component {
   render() {
     return <Playlist />;
@@ -47,7 +29,12 @@ class NowPlaying extends Component {
   render() {
     console.log(this.props);
     if (this.props.song){
-      return <li className="list now-playing">{this.props.song.name}</li>;
+      return <li className="list now-playing">
+        <div className="titleSongNameRow">️🎙{this.props.song.name.substring(0,50)}</div>
+        <div className="titleScoreRow">{this.props.song.score}</div>
+        <button className="voteButton" onClick={()=>this.props.up(this.props.song.songId)}>👍</button>
+        <button className="voteButton" onClick={()=>this.props.down(this.props.song.songId)}>👎</button>
+        </li>;
     }
     return <li className="list now-playing">Waiting for song...</li>;
   }
@@ -58,8 +45,16 @@ class Playlist extends Component {
     super(props);
     this.state = {
       items: [],
-      now_playing: null
+      user:{
+        userId: "",
+        userName: "Anonymous",
+        credit: 0
+      },
+      now_playing: null,
+      credit: 0
     };
+    this.up = this.up.bind(this);
+    this.down = this.down.bind(this);
   }
 
   addTransction(userId, songId, action) {
@@ -77,8 +72,42 @@ class Playlist extends Component {
 
   componentDidMount(){
     console.log("cdm");
+    let that = this;
+    liff.init(function (data) {
+      userId = data.context.userId;
+      // window.alert("userId="+userId);
+      // userId = 'U706f2d264bc26d061c24b79742d84cf1';
+      // userName = 'Kobkrit';
+
+      liff.getProfile()
+      .then(function(profile){
+        userName = profile.displayName
+        // window.alert("userName="+userName);
+        firebase.database().ref('users/'+userId).once('value', function (snapshot) {
+          let val = snapshot.val();
+          // window.alert("val="+val);
+          if (!val){ //For the new (non-existed) users.
+            firebase.database().ref('users/'+userId).set({
+              userName: userName,
+              userId: userId,
+              timestamp: new Date().getTime(),
+              credit: 10
+            });
+          }
+          firebase.database().ref('users/'+userId).on('value', function (snapshot) {
+            console.log("userId");
+            that.setState({user: snapshot.val()});
+          });
+        });
+        console.log("Liff username successfully", userName);
+      })
+      .catch((err) => {
+        window.alert('error', err);
+        // console.log('error', err);
+      });
+    });
     firebase.database().ref('chart/playlist').orderByChild('score').on('value', function (snapshot) {
-      this.setState({items: _.values(snapshot.val())});
+      this.setState({items: orderBy(_.values(snapshot.val()), ["score"], ["desc"])});
     }.bind(this));
     firebase.database().ref('chart/now_playing').on('value', function (snapshot) {
       this.setState({now_playing: snapshot.val()});
@@ -103,7 +132,6 @@ class Playlist extends Component {
     console.log("Up", id);
     this.addTransction(userId, id, 'upvote');
   }
-
   down(id){
     console.log("Down", id);
     this.addTransction(userId, id, 'downvote');
@@ -113,10 +141,9 @@ class Playlist extends Component {
     console.log(this.state.items);
     return this.state.items.map(item => (
       <li className="list" key={item.songId}>
-        <div>[{item.score}]</div>
-        <div>{item.name}</div>
-        <div><button onClick={()=>this.up(item.songId)}>^</button></div>
-        <div><button onClick={()=>this.down(item.songId)}>v</button></div>
+        <div className="songNameRow">{item.name.substring(0,50)}</div>
+        <div className="scoreRow">{item.score}</div>
+        <div className="voteRow"><button className="voteButton" onClick={()=>this.up(item.songId)}>👍</button><button className="voteButton" onClick={()=>this.down(item.songId)}>👎</button></div>
       </li>
     ));
   }
@@ -143,7 +170,7 @@ class Playlist extends Component {
   render() {
     return (
       <div className="container">
-        <span className="name-header">Hello, {userName}</span>
+        <span className="name-header">Hello, {this.state.user.userName}</span>
         <div className="jukebox-padding">
           <FlipMove
             staggerDurationBy="30"
@@ -151,12 +178,13 @@ class Playlist extends Component {
             typeName="ul"
             className="no-padding"
           >
-            <NowPlaying song={this.state.now_playing} />
+            <span className="name-header">You have {this.state.user.credit} credits</span>
+            <NowPlaying song={this.state.now_playing} up={this.up} down={this.down} />
             {this.renderItems()}
           </FlipMove>
         </div>
-        <button onClick={this.shuffle}>Submit</button>
-        <button onClick={this.sort}>Sort</button>
+        {/* <button onClick={this.shuffle}>Submit</button>
+        <button onClick={this.sort}>Sort</button> */}
       </div>
     );
   }
