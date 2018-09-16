@@ -55,6 +55,8 @@ class Playlist extends Component {
     };
     this.up = this.up.bind(this);
     this.down = this.down.bind(this);
+    this.up_now_playing = this.up_now_playing.bind(this);
+    this.down_now_playing = this.down_now_playing.bind(this);
   }
 
   addTransction(userId, songId, action) {
